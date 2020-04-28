@@ -1,6 +1,6 @@
 {
   "name": "@btd3/evalscraper",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "A configurable web page scraper that uses Google Puppeteer",
   "main": "EvalScraper.js",
   "scripts": {

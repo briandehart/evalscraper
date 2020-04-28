@@ -1,76 +1,83 @@
-EvalScraper exports a Scraper class and a ScrapeTask class.
+# EvalScraper
 
-A Scraper instance accepts a ScrapeTask instance.
+EvalScraper is middleware for scraping web pages with Google Puppeteer.
 
-It returns an object with key: value pairs based on the ScrapeTask.
+### Installation
 
-A Scraper instance is configured by optionally passing it an object at it's creation.
+    npm install evalscraper
 
-```
-const Scraper = new Scraper(
-  {
-    throwError: true | false default: true,
-    noisy: true | false default: false,
-    timeout: milliseconds default: 30000,
-    maxRetries: 2 default: 0,
-    throwTimeoutError: true default: true,
-  });
-```
+### Usage
 
-A ScrapeTask instance is passed to the Scraper's .scrape method.
+Create a ScrapeTask and pass it to a Scraper's ```.scrape``` method. A promise is returned. It resolves to an object with key: value pairs based on the ScrapeTask. 
 
-A ScrapeTask accepts a url as its first argument. It accepts a number of arrays of tasks to be run on the page returned from the url.
+A ScrapeTasks's first parameter is the url to scrape. Then follow one or more arrays, each containing elements for a scrape of that url.
 
-```
-const ScrapeTask =
-  new ScrapeTask(
-  'https://url-to-scrape/',
-  [
-    'key',
-    'selector target',
-    Function to be evaluated in browser context,
-    Optional function to be called on returned array
-  ]
-);
-```
-###Example:
+    const ScrapeTask =
+      new ScrapeTask(
+      'https://url-to-scrape/',
+      [
+        'key',
+        'selector target',
+        Function to be evaluated in browser context,
+        Callback function to be called on returned array | Optional
+      ],
+      ...[Next scrape] | Optional
+    );
+
+
+A Scraper instance can be configured by passing it an optional object at creation.
+
+    const Scraper = new Scraper(
+      {
+        throwError: true (default) | false,
+        noisy: true | false (default), // logs ScrapeTask's progress
+        timeout: milliseconds (default: 30000),
+        maxRetries: number (default: 0),
+        throwTimeoutError: true (default) | false,
+      });
+
+
+### Example
+
+Scrape Hacker News and return the titles and links of the first ten stories.
 
 ```JavaScript
 const { Scraper, ScrapeTask } = require('EvalScraper');
 
-const Scraper = new Scraper(
+const scraper = new Scraper(
   {
     throwError: true,
-    noisy: false,
-    timeout: 60000,
+    noisy: true,
+    timeout: 30000,
     maxRetries: 2,
     throwTimeoutError: true,
   });
 
-
-const ScrapeTask =
-  new ScrapeTask('https://url-to-scrape/',
+// returns the titles and links of 
+// the first ten Hacker News stories
+const newsScrape =
+  new ScrapeTask('https://news.ycombinator.com/',
   [
-    'key',
-    'selector target',
-    Function to be evaluated in browser context,
-    Function to be called on returned array
-  ]
+    'stories',
+    'a.storylink',
+    anchors => anchors.map(a => {
+      const story = [];
+      story.push(a.textContent);
+      story.push(a.href)
+      return story;
+    }),
+    anchors => anchors.slice(0, 10)
+  ],
 );
 
-async function scrapeMeta () {
+async function logStories (scrapeTask) {
   try {
-    const task = new ScrapeTask('https://news.ycombinator.com/',
-      ['firstArticleTitle', '.title', dvs => dvs.map(d => d.textContent), getFirstArticle],
-      ['secondArticleTitle', '.title', dvs => dvs.map(d => d.textContent), getFirstArticle]
-    );
-    const scrape = await scraper.scrape(task);
-    return scrape;
+    const hackerNews = await scraper.scrape(scrapeTask);
+    hackerNews.stories.forEach(story => console.log(story[0], story[1], '\n'));
   } catch (err) {
-    throw new Error(`scrapeMeta: ${err}`);
+    throw new Error(err);
   }
 }
 
-getFri
-
+logStories(newsScrape);
 ```
