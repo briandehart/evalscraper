@@ -8,10 +8,10 @@ evalscraper is middleware for scraping web pages with [Google Puppeteer](https:/
 
 ### Usage
 
-Create a ScrapeTask and pass it to a Scraper's ```.scrape``` method. A promise is returned. It resolves to an object with key: value pairs determined by the ScrapeTask. 
+Create a ScrapeTask and pass it to a Scraper's ```.scrape``` method. ```.scrape``` returns a promise that resolves to an object with key: value pairs determined by the ScrapeTask. 
 
 A ScrapeTasks's first parameter is the url of the page to scrape. Then follow one or more arrays, each containing elements for a scrape of that page. 
-```
+
     const task =
       new ScrapeTask(
       'https://url-to-scrape/',
@@ -23,7 +23,7 @@ A ScrapeTasks's first parameter is the url of the page to scrape. Then follow on
       ],
       ...[Next scrape] | Optional
     );
-```
+
  ```pageFunction``` evaluates in the browser context.
 
 A Scraper instance can be configured by passing it an optional object at creation.
@@ -67,7 +67,7 @@ const newsScrape =
       story.push(a.href)
       return story;
     }),
-    anchors => anchors.slice(0, 10)
+    stories => stories.slice(0, 10)
   ],
 );
 

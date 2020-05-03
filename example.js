@@ -21,7 +21,7 @@ const newsScrape =
       story.push(a.href)
       return story;
     }),
-    anchors => anchors.slice(0, 10)
+    stories => stories.slice(0, 10)
   ],
 );
 
