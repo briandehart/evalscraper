@@ -1,4 +1,4 @@
-const { Scraper, ScrapeTask } = require('./EvalScraper.js');
+const { Scraper, ScrapeTask } = require('./evalscraper.js');
 
 const scraper = new Scraper(
   {

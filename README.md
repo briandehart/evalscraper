@@ -1,6 +1,6 @@
-# EvalScraper
+# evalscraper
 
-EvalScraper is middleware for scraping web pages with Google Puppeteer.
+evalscraper is middleware for scraping web pages with [Google Puppeteer](https://developers.google.com/web/tools/puppeteer).
 
 ### Installation
 
@@ -8,29 +8,30 @@ EvalScraper is middleware for scraping web pages with Google Puppeteer.
 
 ### Usage
 
-Create a ScrapeTask and pass it to a Scraper's ```.scrape``` method. A promise is returned. It resolves to an object with key: value pairs based on the ScrapeTask. 
+Create a ScrapeTask and pass it to a Scraper's ```.scrape``` method. A promise is returned. It resolves to an object with key: value pairs determined by the ScrapeTask. 
 
-A ScrapeTasks's first parameter is the url to scrape. Then follow one or more arrays, each containing elements for a scrape of that url.
-
-    const ScrapeTask =
+A ScrapeTasks's first parameter is the url of the page to scrape. Then follow one or more arrays, each containing elements for a scrape of that page. 
+```
+    const task =
       new ScrapeTask(
       'https://url-to-scrape/',
       [
         'key',
-        'selector target',
-        Function to be evaluated in browser context,
-        Callback function to be called on returned array | Optional
+        'selector', 
+        pageFunction(selectors), // passed an array containing all instances of 'selector' found on the page
+        callback(array) | Optional // called on an array returned by pageFunction
       ],
       ...[Next scrape] | Optional
     );
-
+```
+ ```pageFunction``` evaluates in the browser context.
 
 A Scraper instance can be configured by passing it an optional object at creation.
 
-    const Scraper = new Scraper(
+    const scraper = new Scraper(
       {
         throwError: true (default) | false,
-        noisy: true | false (default), // logs ScrapeTask's progress
+        noisy: true | false (default), // logs ScrapeTask's progress to console
         timeout: milliseconds (default: 30000),
         maxRetries: number (default: 0),
         throwTimeoutError: true (default) | false,
@@ -39,7 +40,7 @@ A Scraper instance can be configured by passing it an optional object at creatio
 
 ### Example
 
-Scrape Hacker News and return the titles and links of the first ten stories.
+Scrape [Hacker News](https://news.ycombinator.com/) and return the titles and links of the first ten stories.
 
 ```JavaScript
 const { Scraper, ScrapeTask } = require('EvalScraper');

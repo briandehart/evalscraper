@@ -1,14 +1,24 @@
 {
-  "name": "@btd3/evalscraper",
+  "name": "evalscraper",
   "version": "0.0.1",
   "description": "A configurable web page scraper that uses Google Puppeteer",
-  "main": "EvalScraper.js",
+  "main": "evalscraper.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "author": "Brian Dehart <briandehart@gmail.com>",
   "license": "ISC",
   "dependencies": {
     "puppeteer": "^3.0.0"
-  }
+  },
+  "devDependencies": {
+    "ist": "^1.1.6",
+    "mocha": "^7.1.2"
+  },
+  "files": [
+    "evalscraper.js",
+    "README.md",
+    "package.json",
+    "example.js"
+  ]
 }
