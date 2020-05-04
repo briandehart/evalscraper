@@ -7,7 +7,7 @@
     "test": "mocha"
   },
   "author": "Brian Dehart <briandehart@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "puppeteer": "^3.0.0"
   },
