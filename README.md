@@ -18,8 +18,9 @@ A ScrapeTasks's first parameter is the url of the page to scrape. Then follow on
       [
         'key',
         'selector', 
-        pageFunction(selectors), // passed an array containing all instances of 'selector' found on the page
-        callback(array) | Optional // called on an array returned by pageFunction
+        pageFunction(selectors), // passed an array containing all instances 
+                                 // of 'selector' found on the page
+        callback(array) | Optional // passed the array returned by pageFunction
       ],
       ...[Next scrape] | Optional
     );
@@ -43,7 +44,7 @@ A Scraper instance can be configured by passing it an optional object at creatio
 Scrape [Hacker News](https://news.ycombinator.com/) and return the titles and links of the first ten stories.
 
 ```JavaScript
-const { Scraper, ScrapeTask } = require('EvalScraper');
+const { Scraper, ScrapeTask } = require('evalscraper');
 
 const scraper = new Scraper(
   {
