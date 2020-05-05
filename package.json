@@ -18,7 +18,6 @@
   "files": [
     "evalscraper.js",
     "README.md",
-    "package.json",
-    "example.js"
+    "package.json"
   ]
 }

@@ -18,9 +18,10 @@ class Scraper {
       if (this.retryCounter > 0) console.log(`Scraper retry attempt #${this.retryCounter}`);
       const container = {};
       const browser = await puppeteer.launch();
+      if (this.noisy) console.log(`--> Puppeteer has launched for ${task.url}`);
       const page = await browser.newPage();
-      if (this.noisy) console.log(`Scraper to ${task.url}...`);
       await page.goto(task.url, { timeout: this.timeout });
+      if (this.noisy) console.log(`Scraper went to ${task.url}...`);
       // evaluate scrape tasks
       for (const [key, target, handler, callback] of task.scrape) {
         let scrape = await page.$$eval(target, handler); // returns an array
@@ -29,6 +30,7 @@ class Scraper {
         container[key] = scrape;
       }
       await browser.close();
+      if (this.noisy) console.log(`<-- Puppeteer has closed for ${task.url}`);
       return container;
     } catch (err) {
       if (err instanceof TimeoutError) {
