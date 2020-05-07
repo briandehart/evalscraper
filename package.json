@@ -1,6 +1,6 @@
 {
   "name": "evalscraper",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "A configurable web page scraper that uses Google Puppeteer",
   "main": "evalscraper.js",
   "scripts": {
