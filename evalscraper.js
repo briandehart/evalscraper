@@ -15,7 +15,7 @@ class Scraper {
       if (this.retryCounter > this.maxRetries) {
         throw new Error(`Scrape attempts exceeded limit of ${this.maxRetries}`);
       }
-      if (this.retryCounter > 0) console.log(`Scraper retry attempt #${this.retryCounter}`);
+      if (this.retryCounter > 0) console.log(`Scraper retry attempt ${this.retryCounter}`);
       const container = {};
       const browser = await puppeteer.launch();
       if (this.noisy) console.log(`--> Puppeteer launched for ${task.url}`);
