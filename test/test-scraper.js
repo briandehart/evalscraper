@@ -2,9 +2,20 @@ const ist = require('ist');
 const { stdout, sterr } = require('test-console');
 const { Scraper, ScrapeTask } = require('../evalscraper.js');
 
+
+const defaultScraper = new Scraper();
+
+const nonDefaultScraper = new Scraper(
+  {
+    throwError: false,
+    noisy: true,
+    timeout: 60000,
+    maxRetries: 0,
+  });
+
 const noisyScraper = new Scraper(
   {
-    throw: true,
+    throwError: true,
     noisy: true,
     timeout: 30000,
     maxRetries: 2,
@@ -12,59 +23,85 @@ const noisyScraper = new Scraper(
 
 const quietScraper = new Scraper(
   {
-    throw: false,
+    throwError: false,
     noisy: false,
     timeout: 30000,
     maxRetries: 2,
-});
+  });
 
 const timeoutScraper = new Scraper(
   {
-    throw: true,
+    throwError: true,
     noisy: false,
-    timeout: 1, // raise timeout
+    timeout: 1, // raise Timeout Error
     maxRetries: 2,
-});
+  });
 
 const quietTimeoutScraper = new Scraper(
   {
-    throw: false,
+    throwError: false,
     noisy: false,
-    timeout: 1, // raise timeout
+    timeout: 1, // raise Timeout Error
     maxRetries: 2,
-});
+  });
 
 const task =
   new ScrapeTask('http://127.0.0.1:8080',
-  [
-    'target',
-    'p',
-    paragraphs => paragraphs.map(p => {
-      const parag = [];
-      parag.push(p.textContent);
-      return parag;
-    })
-  ]
-);
+    [
+      'target',
+      'p',
+      paragraphs => paragraphs.map(p => {
+        const parag = [];
+        parag.push(p.textContent);
+        return parag;
+      })
+    ]
+  );
 
 const taskCallback =
   new ScrapeTask('http://127.0.0.1:8080',
-  [
-    'target',
-    'p',
-    paragraphs => paragraphs.map(p => {
-      const parag = [];
-      parag.push(p.textContent);
-      return parag;
-    }),
-    paragraphs => paragraphs.map(p => p[0].toUpperCase())
-  ]
-);
+    [
+      'target',
+      'p',
+      paragraphs => paragraphs.map(p => {
+        const parag = [];
+        parag.push(p.textContent);
+        return parag;
+      }),
+      paragraphs => paragraphs.map(p => p[0].toUpperCase())
+    ]
+  );
 
 const targetText = 'target';
 const numSelectors = 2;
 
 describe('Scraper', () => {
+  describe('constructor', () => {
+    it('intitializes with a default throwError property of true', () => {
+      ist(defaultScraper.throwError, true);
+    });
+    it('intitializes with a default noisy property of false', () => {
+      ist(defaultScraper.noisy, false);
+    });
+    it('intitializes with a default timeout property of 30000', () => {
+      ist(defaultScraper.timeout, 30000);
+    });
+    it('intitializes with a default maxRetries property of 2', () => {
+      ist(defaultScraper.maxRetries, 2);
+    });
+    it('configures a throwError property', () => {
+      ist(nonDefaultScraper.throwError, false);
+    });
+    it('configures a noisy property', () => {
+      ist(nonDefaultScraper.noisy, true);
+    });
+    it('configures a timeout property', () => {
+      ist(nonDefaultScraper.timeout, 60000);
+    });
+    it('configures a maxRetries property', () => {
+      ist(nonDefaultScraper.maxRetries, 0);
+    });
+  });
   it('returns an object with a property name taken from the scrape task', async () => {
     const testScrape = await quietScraper.scrape(task);
     ist(Object.getOwnPropertyNames(testScrape)[0], task.scrape[0][0]);
@@ -93,11 +130,11 @@ describe('Scraper', () => {
     inspect.restore();
     ist(inspect.output.length === 0);
   });
-  it('throws Timeout errors when throw is set to true', () => {
+  it('throws Timeout errors when throwError is set to true', () => {
     const scrapeFn = async () => await quietTimeoutScraper.scrape(task)
     ist.throws(scrapeFn());
   });
-  it('suppresses errors and returns null when throw is set to false', async () => {
+  it('suppresses errors and returns null when throwError is set to false', async () => {
     const testScrape = await quietTimeoutScraper.scrape(task);
     ist(testScrape, null);
   });

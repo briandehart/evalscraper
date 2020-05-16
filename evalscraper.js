@@ -2,18 +2,19 @@ const puppeteer = require('puppeteer');
 const { TimeoutError } = puppeteer.errors;
 
 class Scraper {
-  constructor (config) {
-    this.throw = config.throw;
-    this.noisy = config.noisy;
-    this.timeout = config.timeout || 30000;
-    this.maxRetries = config.maxRetries || 0;
+  constructor ({ throwError = true, noisy = false, timeout = 30000, maxRetries = 2 } = {}) {
+    this.throwError = throwError;
+    this.noisy = noisy;
+    this.timeout = timeout;
+    this.maxRetries = maxRetries;
     this.retryCounter = 0;
   }
 
   async scrape (task) {
     try {
       if (this.retryCounter > this.maxRetries) {
-        throw new Error(`Scrape attempts exceeded limit of ${this.maxRetries}`);
+        if (this.throwError) throw new Error(`Scrape attempts exceeded limit of ${this.maxRetries}`);
+        else return null;
       }
       if (this.retryCounter > 0 && this.noisy) console.log(`Scraper retry attempt ${this.retryCounter}`);
       const container = {};
@@ -41,7 +42,7 @@ class Scraper {
         this.retryCounter = 0;
         return retryScrape;
       } else {
-        if (this.throw) throw new Error(`Scraper module: ${err}`);
+        if (this.throwError) throw new Error(`Scraper module: ${err}`);
         return null;
       }
     }
