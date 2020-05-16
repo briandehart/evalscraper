@@ -4,7 +4,9 @@ evalscraper is middleware for scraping web pages with [Google Puppeteer](https:/
 
 ### Installation
 
-    npm install evalscraper
+```console
+npm install evalscraper
+```
 
 ### Usage
 
@@ -42,6 +44,7 @@ Pass the ```ScrapeTask``` to the```.scrape()``` method. It returns a ```Promise`
 const scrapeOfPage = await scraper.scrape(scrapeTask);
 ```
 ### Configuration
+
 A ```Scraper``` instance can be configured by passing an object to the constructor.
 ```JavaScript
   const scraper = new Scraper(
