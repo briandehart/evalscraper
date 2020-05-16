@@ -3,8 +3,8 @@ const { TimeoutError } = puppeteer.errors;
 
 class Scraper {
   constructor (config) {
-    this.throw = config.throwError || true;
-    this.noisy = config.noisy || false;
+    this.throw = config.throw;
+    this.noisy = config.noisy;
     this.timeout = config.timeout || 30000;
     this.maxRetries = config.maxRetries || 0;
     this.retryCounter = 0;
@@ -15,7 +15,7 @@ class Scraper {
       if (this.retryCounter > this.maxRetries) {
         throw new Error(`Scrape attempts exceeded limit of ${this.maxRetries}`);
       }
-      if (this.retryCounter > 0) console.log(`Scraper retry attempt ${this.retryCounter}`);
+      if (this.retryCounter > 0 && this.noisy) console.log(`Scraper retry attempt ${this.retryCounter}`);
       const container = {};
       const browser = await puppeteer.launch();
       if (this.noisy) console.log(`--> Puppeteer launched for ${task.url}`);
@@ -36,34 +36,18 @@ class Scraper {
       if (err instanceof TimeoutError) {
         // retry scrape
         this.retryCounter++;
-        console.log('\x1b[35m%s\x1b[0m', `${err}. Retrying...`);
+        if (this.noisy) console.log('\x1b[35m%s\x1b[0m', `${err}. Retrying...`);
         const retryScrape = await this.scrape(task);
         this.retryCounter = 0;
         return retryScrape;
       } else {
-        if (this.throw === false) return null;
-        throw new Error(`Scraper module: ${err}`);
+        if (this.throw) throw new Error(`Scraper module: ${err}`);
+        return null;
       }
     }
   }
 }
 
-// A ScrapeTasks's first parameter is the url to scrape. 
-// Then follow one or more arrays, each containing elements 
-// for a scrape of that url.
-//
-// const task =
-// new ScrapeTask(
-// 'https://url-to-scrape/',
-// [
-//   'key',
-//   'selector', 
-//   pageFunction(selectors), // passed an array containing all instances 
-                              // of 'selector' found on the page
-//   callback(array) | Optional // called on an array returned by pageFunction
-// ],
-// ...[Next scrape] | Optional
-// );
 class ScrapeTask {
   constructor (url, ...scrapes) {
     this.url = url;

@@ -4,7 +4,7 @@
   "description": "A configurable web page scraper that uses Google Puppeteer",
   "main": "evalscraper.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha --exit --timeout 30000"
   },
   "author": "Brian Dehart <briandehart@gmail.com>",
   "license": "MIT",
@@ -13,7 +13,9 @@
   },
   "devDependencies": {
     "ist": "^1.1.6",
-    "mocha": "^7.1.2"
+    "mocha": "^7.1.2",
+    "node-static": "^0.7.11",
+    "test-console": "^1.1.0"
   },
   "files": [
     "evalscraper.js",
