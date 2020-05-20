@@ -16,7 +16,7 @@ Create a new ```Scraper``` instance.
 const scraper = new Scraper();
 ```
 
-Create a new ```ScrapeTask``` instance. A ```ScrapeTask```'s first parameter is the url of the page to scrape. Then follow one or more arrays, each containing elements for a scrape of that page. ```pageFunction``` evaluates in browser context.
+A ```ScrapeTask```'s first parameter is the url of the page to scrape. Then follow one or more arrays, each containing elements for a scrape of that page. ```pageFunction``` evaluates in browser context.
 
 ```JavaScript
 const scrapeTask =
