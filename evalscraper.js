@@ -25,6 +25,7 @@ class Scraper {
       if (this.noisy) console.log(`Scraper went to ${task.url}...`);
       // evaluate scrape tasks
       for (const [key, target, handler, callback] of task.scrape) {
+        await page.waitForSelector(target);
         let scrape = await page.$$eval(target, handler); // returns an array
         if (this.noisy) console.log(`Scraper got ${key}`);
         if (callback) scrape = callback(scrape);
