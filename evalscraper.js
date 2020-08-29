@@ -21,6 +21,12 @@ class Scraper {
       const browser = await puppeteer.launch();
       if (this.noisy) console.log(`--> Puppeteer launched for ${task.url}`);
       const page = await browser.newPage();
+      // FIXME: find a better way to handle page crashes with Puppeteer
+      // page crashes are not caught by try catch block and cause UnhandledPromiseRejectionWarning
+      // throwing an error here instead of logging causes UnhandledPromiseRejectionWarning
+      page.on('error', (err) => {
+        console.log('\x1b[35m%s\x1b[0m', `Scraper Page Error: ${err}`)
+      });
       await page.goto(task.url, { timeout: this.timeout });
       if (this.noisy) console.log(`Scraper went to ${task.url}...`);
       // evaluate scrape tasks
