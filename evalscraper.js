@@ -27,7 +27,7 @@ class Scraper {
       page.on('error', (err) => {
         console.log('\x1b[35m%s\x1b[0m', `Scraper Page Error: ${err}`)
       });
-      await page.goto(task.url, { timeout: this.timeout });
+      await page.goto(task.url, { timeout: this.timeout, waitUntil: 'domcontentloaded' });
       if (this.noisy) console.log(`Scraper went to ${task.url}...`);
       // evaluate scrape tasks
       for (const [key, target, handler, callback] of task.scrape) {
