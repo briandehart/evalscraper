@@ -13,7 +13,7 @@
   "author": "Brian Dehart <briandehart@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "puppeteer": "^5.4.0"
+    "puppeteer": "^8.0.0"
   },
   "devDependencies": {
     "ist": "^1.1.6",
