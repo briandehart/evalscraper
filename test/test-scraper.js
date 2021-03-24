@@ -50,6 +50,17 @@ const task = new ScrapeTask("http://127.0.0.1:8080", [
     }),
 ]);
 
+const taskError = new ScrapeTask("http://127.0.0.1:8080", [
+  "target",
+  "span", // element not found
+  (paragraphs) =>
+    paragraphs.map((p) => {
+      const parag = [];
+      parag.push(p.textContent);
+      return parag;
+    }),
+]);
+
 const taskCallback = new ScrapeTask("http://127.0.0.1:8080", [
   "target",
   "p",
@@ -125,7 +136,7 @@ describe("Scraper", () => {
     ist.throws(scrapeFn());
   });
   it("suppresses errors and returns null when throwError is set to false", async () => {
-    const testScrape = await quietTimeoutScraper.scrape(task);
+    const testScrape = await quietTimeoutScraper.scrape(taskError);
     ist(testScrape, null);
   });
   it("retries the scrape on error limited to Scraper.maxRetries");
