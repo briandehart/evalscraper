@@ -1,5 +1,7 @@
 import puppeteer from "puppeteer";
-const TimeoutError = puppeteer.TimeoutError;
+import { Browser, Page } from "puppeteer";
+// checking err instanceof TimeoutError doesn't work with ESM
+// const { TimeoutError } = puppeteer.errors;
 
 type Scrape = [
   // property to hold the returned value of this scrape
@@ -11,15 +13,18 @@ type Scrape = [
   // a functon passed an array containing all
   // instances of 'selector' found on the page;
   // pageFunction evaluates in browser context
-  pageFunction: (selectors: string[]) => string[],
+  pageFunction: (
+    elements: Element[],
+    ...args: unknown[]
+  ) => string[] | Promise<string[]>,
 
   // Optional callback that is passed an
   // array returned by pageFunction
-  callback?: (scrape: string[]) => void
+  callback?: (scrape: string[]) => unknown
 ];
 
 interface ScrapeResults {
-  [key: string]: unknown[];
+  [key: string]: unknown;
 }
 
 export class ScrapeTask {
@@ -63,7 +68,7 @@ export class Scraper {
       }
       if (this.retryCounter > 0 && this.noisy)
         console.log(`Scraper retry attempt ${this.retryCounter}`);
-      const browser = await puppeteer.launch();
+      const browser: Browser = await puppeteer.launch();
       if (this.noisy) console.log(`--> Puppeteer launched for ${task.url}`);
       const page = await getPage(browser, task.url, this.noisy, this.timeout);
       const results = await evaluateScrapeTasks(page, task.scrape, this.noisy);
@@ -71,7 +76,8 @@ export class Scraper {
       if (this.noisy) console.log(`<-x Puppeteer closed for ${task.url}`);
       return results;
     } catch (err) {
-      if (err instanceof TimeoutError) {
+      // checking err instanceof TimeoutError doesn't work
+      if (err.message.includes("TimeoutError")) {
         // retry scrape
         this.retryCounter++;
         if (this.noisy) console.log("\x1b[35m%s\x1b[0m", `${err}. Retrying...`);
@@ -86,20 +92,20 @@ export class Scraper {
     }
 
     async function getPage(
-      browser: any,
+      browser: Browser,
       url: string,
       noisy: boolean,
       timeout: number
-    ): Promise<any> {
+    ): Promise<Page> {
       try {
-        const page = await browser.newPage();
-        // throwing an error here causes UnhandledPromiseRejectionWarning;
-        // log instead
+        const page: Page = await browser.newPage();
+        // throwing an error here causes UnhandledPromiseRejectionWarning
         page.on("error", (err: string) => {
           console.log("\x1b[35m%s\x1b[0m", `Page: ${err}`);
         });
+        // setting timeout in page.goto config obj is bugged, set with method instead
+        page.setDefaultTimeout(timeout);
         await page.goto(url, {
-          timeout,
           waitUntil: "domcontentloaded",
         });
         if (noisy) console.log(`Scraper went to ${url}...`);
@@ -110,18 +116,18 @@ export class Scraper {
     }
 
     async function evaluateScrapeTasks(
-      page: any,
+      page: Page,
       task: Scrape[],
       noisy: boolean
-    ) {
+    ): Promise<ScrapeResults> {
       try {
         const results: ScrapeResults = {};
         for (const [key, target, handler, callback] of task) {
           await page.waitForSelector(target);
-          let scrape = await page.$$eval(target, handler); // returns an array
+          const scrape: string[] = await page.$$eval(target, handler); // returns an array
           if (noisy) console.log(`Scraper got ${key}`);
-          if (callback) scrape = callback(scrape);
-          results[key] = scrape;
+          const result: unknown = callback ? callback(scrape) : scrape;
+          results[key] = result;
         }
         return results;
       } catch (err) {
@@ -130,8 +136,3 @@ export class Scraper {
     }
   }
 }
-
-// module.exports = {
-//   Scraper,
-//   ScrapeTask,
-// };

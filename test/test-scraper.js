@@ -1,19 +1,22 @@
-import ist, { throws } from "ist";
-import * as testConsole from "test-console";
-let { stdout, sterr } = testConsole;
 import { Scraper, ScrapeTask } from "../dist/evalscraper.mjs";
+import ist from "ist";
+import * as testConsole from "test-console";
+let { stdout } = testConsole;
 let moduleType = "ES6";
 
 if (process.env.COMMON) {
-  ist, ({ throws } = require("ist"));
-  ({ stdout, sterr } = require("test-console"));
   ({ Scraper, ScrapeTask } = require("../dist/evalscraper.js"));
+  ist = require("ist");
+  ({ stdout } = require("test-console"));
   moduleType = "CommonJS";
 }
 
-console.log(Scraper.modType);
-
 const defaultScraper = new Scraper();
+// defaults
+// throwError: true,
+// noisy: false,
+// timeout: 30000,
+// maxRetries: 2,
 
 const nonDefaultScraper = new Scraper({
   throwError: false,
@@ -23,24 +26,24 @@ const nonDefaultScraper = new Scraper({
 });
 
 const noisyScraper = new Scraper({
-  throwError: true,
+  throwError: false,
   noisy: true,
   timeout: 1000,
-  maxRetries: 2,
+  maxRetries: 1,
 });
 
 const quietScraper = new Scraper({
   throwError: false,
   noisy: false,
   timeout: 1000,
-  maxRetries: 2,
+  maxRetries: 1,
 });
 
-const timeoutScraper = new Scraper({
+const errorScraper = new Scraper({
   throwError: true,
   noisy: false,
-  timeout: 2,
-  maxRetries: 2,
+  timeout: 1000,
+  maxRetries: 1,
 });
 
 const task = new ScrapeTask("http://127.0.0.1:8080", [
@@ -54,9 +57,9 @@ const task = new ScrapeTask("http://127.0.0.1:8080", [
     }),
 ]);
 
-const taskError = new ScrapeTask("http://127.0.0.1:8080", [
+const errorTask = new ScrapeTask("http://127.0.0.1:8080", [
   "target",
-  "span", // element not found
+  "span", // element will not be found
   (paragraphs) =>
     paragraphs.map((p) => {
       const parag = [];
@@ -65,7 +68,7 @@ const taskError = new ScrapeTask("http://127.0.0.1:8080", [
     }),
 ]);
 
-const taskCallback = new ScrapeTask("http://127.0.0.1:8080", [
+const callbackTask = new ScrapeTask("http://127.0.0.1:8080", [
   "target",
   "p",
   (paragraphs) =>
@@ -119,7 +122,7 @@ describe(`Scraper ${moduleType}`, () => {
     ist(Array.isArray(testScrape.target));
   });
   it("calls a callback function on returned value", async () => {
-    const testScrape = await quietScraper.scrape(taskCallback);
+    const testScrape = await quietScraper.scrape(callbackTask);
     ist(testScrape.target[1], "TARGET");
   });
   it("logs progress when noisy is set to true", async () => {
@@ -134,16 +137,40 @@ describe(`Scraper ${moduleType}`, () => {
     inspect.restore();
     ist(inspect.output.length === 0);
   });
-  // it("suppresses errors and returns null when throwError is set to false", async () => {
-  //   const testScrape = await quietScraper.scrape(taskError);
-  //   ist(testScrape, null);
-  // });
-  it("throws Timeout errors when throwError is set to true", (done) => {
-    const scrapeFn = async () => await timeoutScraper.scrape(task);
-    ist.throws(scrapeFn());
-    done();
+  it("throws errors when throwError is set to true", async () => {
+    try {
+      await errorScraper.scrape(errorTask);
+      throw new Error("Test did not throw");
+    } catch (err) {
+      if (err.message === "Test did not throw") throw new Error();
+    }
   });
-  it("throws Timeout errors when throwError is set to true");
-  it("retries the scrape on error limited to Scraper.maxRetries");
-  it("configures puppeteer timeouts");
+  it("suppresses errors when throwError is set to false", async () => {
+    await quietScraper.scrape(errorTask);
+  });
+  it("returns null when throwError is set to false", async () => {
+    const testScrape = await quietScraper.scrape(errorTask);
+    ist(testScrape, null);
+  });
+  it("retries the scrape on TimeoutError", async () => {
+    try {
+      await errorScraper.scrape(errorTask);
+      throw new Error("Test did not throw");
+    } catch (err) {
+      if (
+        err.message === "Test did not throw" ||
+        !err.message.includes("Scrape attempts exceeded limit")
+      )
+        throw new Error(err);
+    }
+  });
+  it("configures puppeteer timeouts correctly", async () => {
+    const inspect = stdout.inspect();
+    await noisyScraper.scrape(errorTask);
+    inspect.restore();
+    const logs = inspect.output.filter((logMessage) =>
+      logMessage.includes("1000ms")
+    );
+    if (logs.length === 0) throw new Error();
+  });
 });
