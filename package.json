@@ -10,7 +10,7 @@
   "module": "dist/evalscraper.mjs",
   "types": "dist/evalscraper.d.ts",
   "scripts": {
-    "test": "mocha --exit --timeout 30000 --require esm && env COMMON=true mocha --exit --timeout 30000 --require esm",
+    "test": "npm run build && mocha --exit --timeout 10000 --require esm",
     "mjs": "npx tsc -d && mv dist/evalscraper.js dist/evalscraper.mjs",
     "cjs": "npx tsc -m commonjs",
     "build": "npm run mjs && npm run cjs",
@@ -20,15 +20,19 @@
   "author": "Brian Dehart <briandehart@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "chalk": "^2.4.2",
     "puppeteer": "^8.0.0"
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.0",
+    "@types/shelljs": "^0.8.8",
     "esm": "^3.2.25",
+    "find-process": "^1.4.4",
     "ist": "^1.1.7",
     "mocha": "^7.1.2",
     "node-static": "^0.7.11",
     "prettier": "2.2.1",
+    "shelljs": "^0.8.4",
     "test-console": "^1.1.0",
     "typescript": "^4.2.3"
   },
