@@ -10,7 +10,7 @@
   "module": "dist/evalscraper.mjs",
   "types": "dist/evalscraper.d.ts",
   "scripts": {
-    "test": "npm run build && mocha --exit --timeout 10000 --require esm",
+    "test": "npm run build && mocha --exit --timeout 10000 --require esm && env COMMON=true mocha --exit --timeout 30000 --require esm",
     "mjs": "npx tsc -d && mv dist/evalscraper.js dist/evalscraper.mjs",
     "cjs": "npx tsc -m commonjs",
     "build": "npm run mjs && npm run cjs",
