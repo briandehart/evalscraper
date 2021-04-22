@@ -1,40 +1,25 @@
+var __classPrivateFieldSet =
+  (this && this.__classPrivateFieldSet) ||
+  function (receiver, privateMap, value) {
+    if (!privateMap.has(receiver)) {
+      throw new TypeError("attempted to set private field on non-instance");
+    }
+    privateMap.set(receiver, value);
+    return value;
+  };
+var __classPrivateFieldGet =
+  (this && this.__classPrivateFieldGet) ||
+  function (receiver, privateMap) {
+    if (!privateMap.has(receiver)) {
+      throw new TypeError("attempted to get private field on non-instance");
+    }
+    return privateMap.get(receiver);
+  };
+var _retryCounter, _browser, _scrapeId, _activeScrapes;
 import puppeteer from "puppeteer";
-import { Browser, Page } from "puppeteer";
 import chalk from "chalk";
-
 class RetryError extends Error {}
-
-type Scrape = [
-  // property name in Scraper.scrape()'s returned object;
-  // it holds the returned value of this scrape
-  key: string,
-
-  // element to select on page
-  selector: string,
-
-  // a functon passed an array containing all
-  // instances of 'selector' found on the page;
-  // pageFunction evaluates in browser context
-  pageFunction: (
-    elements: Element[],
-    ...args: unknown[]
-  ) => string[] | Promise<string[]>,
-
-  // Optional callback that is passed an
-  // array returned by pageFunction
-  callback?: (scrape: string[]) => unknown
-];
-
-interface ScrapeResults {
-  [key: string]: unknown;
-}
-
-abstract class ScraperConfig {
-  throwError: boolean;
-  noisy: boolean; // when true, progress is logged to console
-  timeout: number;
-  maxRetries: number;
-
+class ScraperConfig {
   constructor({
     throwError = true,
     noisy = false,
@@ -47,38 +32,38 @@ abstract class ScraperConfig {
     this.maxRetries = maxRetries;
   }
 }
-
 class ScrapeHandler extends ScraperConfig {
-  #retryCounter: number;
-  id: number;
-  browser: Browser;
-
   constructor(
-    id: number,
-    browser: Browser,
+    id,
+    browser,
     { throwError = true, noisy = false, timeout = 30000, maxRetries = 2 } = {}
   ) {
     super({ throwError, noisy, timeout, maxRetries });
-    this.#retryCounter = 0;
+    _retryCounter.set(this, void 0);
+    __classPrivateFieldSet(this, _retryCounter, 0);
     this.id = id;
     this.browser = browser;
   }
-
-  async handleScrape(task: ScrapeTask): Promise<any> {
+  async handleScrape(task) {
     try {
       const scrapeId = { id: this.id };
-      if (this.#retryCounter > this.maxRetries) {
+      if (__classPrivateFieldGet(this, _retryCounter) > this.maxRetries) {
         if (this.noisy)
           console.log(
             chalk.magenta(`Exceeded retry limit of ${this.maxRetries}`)
           );
         throw new RetryError(`Exceeded retry limit of ${this.maxRetries}`);
       }
-      if (this.#retryCounter > 0 && this.noisy)
+      if (__classPrivateFieldGet(this, _retryCounter) > 0 && this.noisy)
         console.log(
-          chalk.magenta(`Scraper retry attempt ${this.#retryCounter}`)
+          chalk.magenta(
+            `Scraper retry attempt ${__classPrivateFieldGet(
+              this,
+              _retryCounter
+            )}`
+          )
         );
-      const page: Page = await this.browser.newPage();
+      const page = await this.browser.newPage();
       // setting timeout in page.goto config obj seems bugged, set with method instead
       page.setDefaultTimeout(this.timeout);
       if (this.noisy) console.log(chalk.blue(`---> Page open for ${task.url}`));
@@ -103,27 +88,26 @@ class ScrapeHandler extends ScraperConfig {
         throw new RetryError(`${err}`);
       } else {
         // retry scrape
-        this.#retryCounter++;
+        __classPrivateFieldSet(
+          this,
+          _retryCounter,
+          +__classPrivateFieldGet(this, _retryCounter) + 1
+        );
         if (this.noisy) console.log(chalk.magenta(`${err}. Retrying...`));
         const results = await this.handleScrape(task);
-        this.#retryCounter = 0;
+        __classPrivateFieldSet(this, _retryCounter, 0);
         return results;
       }
     }
   }
-
-  async evaluateScrapeTasks(
-    page: Page,
-    task: Scrape[],
-    noisy: boolean
-  ): Promise<ScrapeResults> {
+  async evaluateScrapeTasks(page, task, noisy) {
     try {
-      const results: ScrapeResults = {};
+      const results = {};
       for (const [key, target, handler, callback] of task) {
         await page.waitForSelector(target);
-        const scrape: string[] = await page.$$eval(target, handler); // returns an array
+        const scrape = await page.$$eval(target, handler); // returns an array
         if (noisy) console.log(chalk.green(`Scraper got ${key}`));
-        const result: unknown = callback ? callback(scrape) : scrape;
+        const result = callback ? callback(scrape) : scrape;
         results[key] = result;
       }
       return results;
@@ -132,23 +116,14 @@ class ScrapeHandler extends ScraperConfig {
     }
   }
 }
-
+_retryCounter = new WeakMap();
 export class ScrapeTask {
-  url: string;
-  scrape: Scrape[];
-  id?: number;
-
-  constructor(url: string, ...scrapes: Scrape[]) {
+  constructor(url, ...scrapes) {
     this.url = url;
     this.scrape = [...scrapes];
   }
 }
-
 export class Scraper extends ScraperConfig {
-  #browser: any;
-  #scrapeId: number;
-  #activeScrapes: any[];
-
   constructor({
     throwError = true,
     noisy = false,
@@ -156,38 +131,54 @@ export class Scraper extends ScraperConfig {
     maxRetries = 2,
   } = {}) {
     super({ throwError, noisy, timeout, maxRetries });
-    this.#scrapeId = 0;
-    this.#activeScrapes = [];
-    this.#browser = (async () => {
-      try {
-        this.#browser = await puppeteer.launch({
-          args: ["--no-sandbox"],
-        });
-        this.#browser.createIncognitoBrowserContext();
-      } catch (err) {
-        throw new Error(`browser init ${err}`);
-      }
-    })();
+    _browser.set(this, void 0);
+    _scrapeId.set(this, void 0);
+    _activeScrapes.set(this, void 0);
+    __classPrivateFieldSet(this, _scrapeId, 0);
+    __classPrivateFieldSet(this, _activeScrapes, []);
+    __classPrivateFieldSet(
+      this,
+      _browser,
+      (async () => {
+        try {
+          __classPrivateFieldSet(
+            this,
+            _browser,
+            await puppeteer.launch({
+              args: ["--no-sandbox"],
+            })
+          );
+          __classPrivateFieldGet(
+            this,
+            _browser
+          ).createIncognitoBrowserContext();
+        } catch (err) {
+          throw new Error(`browser init ${err}`);
+        }
+      })()
+    );
   }
-
   async close() {
-    await this.#browser!.close();
-    this.#browser = undefined;
+    await __classPrivateFieldGet(this, _browser).close();
+    __classPrivateFieldSet(this, _browser, undefined);
     if (this.noisy) console.log(chalk.blue("<-x Closed browser"));
   }
-
-  async scrape(task: ScrapeTask): Promise<ScrapeResults | null | undefined> {
+  async scrape(task) {
     try {
-      await this.#browser;
+      await __classPrivateFieldGet(this, _browser);
       if (this.noisy) console.log(chalk.blue(`Scraping ${task.url}`));
-      const scrapeHandler = new ScrapeHandler(this.#scrapeId, this.#browser!, {
-        throwError: this.throwError,
-        noisy: this.noisy,
-        timeout: this.timeout,
-        maxRetries: this.maxRetries,
-      });
+      const scrapeHandler = new ScrapeHandler(
+        __classPrivateFieldGet(this, _scrapeId),
+        __classPrivateFieldGet(this, _browser),
+        {
+          throwError: this.throwError,
+          noisy: this.noisy,
+          timeout: this.timeout,
+          maxRetries: this.maxRetries,
+        }
+      );
       const results = await scrapeHandler.handleScrape(task);
-      this.#activeScrapes.pop();
+      __classPrivateFieldGet(this, _activeScrapes).pop();
       return results;
     } catch (err) {
       if (this.throwError) throw new Error(`Scraper: ${err}`);
@@ -195,3 +186,6 @@ export class Scraper extends ScraperConfig {
     }
   }
 }
+(_browser = new WeakMap()),
+  (_scrapeId = new WeakMap()),
+  (_activeScrapes = new WeakMap());
