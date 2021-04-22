@@ -2,8 +2,6 @@ import puppeteer from "puppeteer";
 import { Browser, Page } from "puppeteer";
 import chalk from "chalk";
 
-class RetryError extends Error {}
-
 type Scrape = [
   // property name in Scraper.scrape()'s returned object;
   // it holds the returned value of this scrape
@@ -28,6 +26,8 @@ type Scrape = [
 interface ScrapeResults {
   [key: string]: unknown;
 }
+
+class RetryError extends Error {}
 
 abstract class ScraperConfig {
   throwError: boolean;
