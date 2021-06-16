@@ -41,13 +41,6 @@ const errorScraperConfig = {
   maxRetries: 1,
 };
 
-// const noisyErrorScraperConfig = {
-//   throwError: true,
-//   noisy: true,
-//   timeout: 1000,
-//   maxRetries: 1,
-// };
-
 const task = new ScrapeTask("http://127.0.0.1:8080", [
   "target_id",
   "p#target_id",
@@ -183,13 +176,18 @@ describe(`Scraper ${moduleType}`, () => {
   it("suppresses errors when throwError is set to false", async () => {
     await quietScraper.scrape(errorTask);
   });
+  it("suppresses logs when noisy is set to false and errors are thrown", async () => {
+    const inspect = stdout.inspect();
+    await quietScraper.scrape(errorTask);
+    inspect.restore();
+    ist(inspect.output.length === 0);
+  });
   it("returns null when throwError is set to false", async () => {
     const testScrape = await quietScraper.scrape(errorTask);
     ist(testScrape, null);
   });
-  // FIXME: don't test for err.message
+  // FIXME: write a new test that doesn't rely on err.message
   it("retries the scrape on TimeoutError", async () => {
-    // shelljs.exec("pkill chrome");
     try {
       await errorScraper.scrape(errorTask);
       throw new Error("Test did not throw");
@@ -202,7 +200,6 @@ describe(`Scraper ${moduleType}`, () => {
     }
   });
   it("configures puppeteer timeouts correctly", async () => {
-    // shelljs.exec("pkill chrome");
     const inspect = stdout.inspect();
     await noisyScraper.scrape(errorTask);
     inspect.restore();
@@ -222,11 +219,6 @@ describe(`Scraper ${moduleType}`, () => {
           i === 0 ? scraper.scrape(errorTask) : scraper.scrape(task)
         )
       );
-      // scrapers.forEach(
-      //   await Promise.all(
-      //     scrapers.map(async (scraper) => await scraper.close())
-      //   )
-      // );
       results.forEach((scrape, i) =>
         i === 0
           ? ist(scrape === undefined)
@@ -252,12 +244,6 @@ describe(`Scraper ${moduleType}`, () => {
         allTasks.map(async (task) => scraper.scrape(task))
       );
       await scraper.close();
-      // results = await Promise.all(
-      //   allTasks.map(async (task) => scraper.scrape(task))
-      // );
-      // results = await Promise.all(
-      //   allTasks.map(async (task) => scraper.scrape(task))
-      // );
       ist(
         targetTasksNum,
         results.filter((result) => {
@@ -289,7 +275,6 @@ describe(`Scraper ${moduleType}`, () => {
       const tasks = [errorTask, task];
       await Promise.all(tasks.map((t) => quietScraper.scrape(t)));
       await quietScraper.close();
-      // shelljs.exec("pkill chrome");
     } catch (err) {
       if (
         err.message === "Test did not throw" ||

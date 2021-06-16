@@ -196,7 +196,7 @@ class Scraper extends ScraperConfig {
       return results;
     } catch (err) {
       if (this.throwError) throw new Error(`Scraper: ${err}`);
-      console.log(chalk_1.default.red(`Scraper: ${err}`));
+      if (this.noisy) console.log(chalk_1.default.red(`Scraper: ${err}`));
     }
   }
 }

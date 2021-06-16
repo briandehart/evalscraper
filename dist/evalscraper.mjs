@@ -182,7 +182,7 @@ export class Scraper extends ScraperConfig {
       return results;
     } catch (err) {
       if (this.throwError) throw new Error(`Scraper: ${err}`);
-      console.log(chalk.red(`Scraper: ${err}`));
+      if (this.noisy) console.log(chalk.red(`Scraper: ${err}`));
     }
   }
 }
