@@ -1,6 +1,6 @@
 {
   "name": "evalscraper",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A configurable web page scraper that uses Google Puppeteer",
   "keywords": [
     "puppeteer",
@@ -30,7 +30,7 @@
     "esm": "^3.2.25",
     "find-process": "^1.4.4",
     "ist": "^1.1.7",
-    "mocha": "^7.1.2",
+    "mocha": "^8.4.0",
     "prettier": "2.2.1",
     "shelljs": "^0.8.4",
     "test-console": "^1.1.0",

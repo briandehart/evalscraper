@@ -1,3 +1,4 @@
+"use strict";
 var __classPrivateFieldSet =
   (this && this.__classPrivateFieldSet) ||
   function (receiver, state, value, kind, f) {
@@ -42,12 +43,19 @@ var __classPrivateFieldGet =
       ? f.value
       : state.get(receiver);
   };
+var __importDefault =
+  (this && this.__importDefault) ||
+  function (mod) {
+    return mod && mod.__esModule ? mod : { default: mod };
+  };
 var _ScrapeHandler_retryCounter,
   _Scraper_browser,
   _Scraper_scrapeId,
   _Scraper_activeScrapes;
-import puppeteer from "puppeteer";
-import chalk from "chalk";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Scraper = exports.ScrapeTask = void 0;
+const puppeteer_1 = __importDefault(require("puppeteer"));
+const chalk_1 = __importDefault(require("chalk"));
 class RetryError extends Error {}
 class ScraperConfig {
   constructor({
@@ -83,7 +91,9 @@ class ScrapeHandler extends ScraperConfig {
       ) {
         if (this.noisy)
           console.log(
-            chalk.magenta(`Exceeded retry limit of ${this.maxRetries}`)
+            chalk_1.default.magenta(
+              `Exceeded retry limit of ${this.maxRetries}`
+            )
           );
         throw new RetryError(`Exceeded retry limit of ${this.maxRetries}`);
       }
@@ -92,7 +102,7 @@ class ScrapeHandler extends ScraperConfig {
         this.noisy
       )
         console.log(
-          chalk.magenta(
+          chalk_1.default.magenta(
             `Scraper retry attempt ${__classPrivateFieldGet(
               this,
               _ScrapeHandler_retryCounter,
@@ -103,12 +113,14 @@ class ScrapeHandler extends ScraperConfig {
       const page = await this.browser.newPage();
       // setting timeout in page.goto config obj seems bugged, set with method instead
       page.setDefaultTimeout(this.timeout);
-      if (this.noisy) console.log(chalk.blue(`---> Page open for ${task.url}`));
+      if (this.noisy)
+        console.log(chalk_1.default.blue(`---> Page open for ${task.url}`));
       await page.goto(task.url, {
         // domcontentloaded for better performance; handles pop up modals
         waitUntil: "domcontentloaded",
       });
-      if (this.noisy) console.log(chalk.blue(`Page went to ${task.url}...`));
+      if (this.noisy)
+        console.log(chalk_1.default.blue(`Page went to ${task.url}...`));
       const evalTask = await this.evaluateScrapeTasks(
         page,
         task.scrape,
@@ -117,7 +129,7 @@ class ScrapeHandler extends ScraperConfig {
       const results = { ...scrapeId, ...evalTask };
       await page.close();
       if (this.noisy)
-        console.log(chalk.blue(`<--x Page closed for ${task.url}`));
+        console.log(chalk_1.default.blue(`<--x Page closed for ${task.url}`));
       return results;
     } catch (err) {
       // all errors eventually route through RetryError
@@ -131,7 +143,8 @@ class ScrapeHandler extends ScraperConfig {
           +__classPrivateFieldGet(this, _ScrapeHandler_retryCounter, "f") + 1,
           "f"
         );
-        if (this.noisy) console.log(chalk.magenta(`${err}. Retrying...`));
+        if (this.noisy)
+          console.log(chalk_1.default.magenta(`${err}. Retrying...`));
         const results = await this.handleScrape(task);
         __classPrivateFieldSet(this, _ScrapeHandler_retryCounter, 0, "f");
         return results;
@@ -144,7 +157,7 @@ class ScrapeHandler extends ScraperConfig {
       for (const [key, target, handler, callback] of task) {
         await page.waitForSelector(target);
         const scrape = await page.$$eval(target, handler); // returns an array
-        if (noisy) console.log(chalk.green(`Scraper got ${key}`));
+        if (noisy) console.log(chalk_1.default.green(`Scraper got ${key}`));
         const result = callback ? callback(scrape) : scrape;
         results[key] = result;
       }
@@ -155,13 +168,14 @@ class ScrapeHandler extends ScraperConfig {
   }
 }
 _ScrapeHandler_retryCounter = new WeakMap();
-export class ScrapeTask {
+class ScrapeTask {
   constructor(url, ...scrapes) {
     this.url = url;
     this.scrape = [...scrapes];
   }
 }
-export class Scraper extends ScraperConfig {
+exports.ScrapeTask = ScrapeTask;
+class Scraper extends ScraperConfig {
   constructor({
     throwError = true,
     noisy = false,
@@ -182,7 +196,7 @@ export class Scraper extends ScraperConfig {
           __classPrivateFieldSet(
             this,
             _Scraper_browser,
-            await puppeteer.launch({
+            await puppeteer_1.default.launch({
               args: ["--no-sandbox"],
             }),
             "f"
@@ -202,12 +216,12 @@ export class Scraper extends ScraperConfig {
   async close() {
     await __classPrivateFieldGet(this, _Scraper_browser, "f").close();
     __classPrivateFieldSet(this, _Scraper_browser, undefined, "f");
-    if (this.noisy) console.log(chalk.blue("<-x Closed browser"));
+    if (this.noisy) console.log(chalk_1.default.blue("<-x Closed browser"));
   }
   async scrape(task) {
     try {
       await __classPrivateFieldGet(this, _Scraper_browser, "f");
-      if (this.noisy) console.log(chalk.blue(`Scraping ${task.url}`));
+      if (this.noisy) console.log(chalk_1.default.blue(`Scraping ${task.url}`));
       const scrapeHandler = new ScrapeHandler(
         __classPrivateFieldGet(this, _Scraper_scrapeId, "f"),
         __classPrivateFieldGet(this, _Scraper_browser, "f"),
@@ -223,10 +237,11 @@ export class Scraper extends ScraperConfig {
       return results;
     } catch (err) {
       if (this.throwError) throw new Error(`Scraper: ${err}`);
-      if (this.noisy) console.log(chalk.red(`Scraper: ${err}`));
+      if (this.noisy) console.log(chalk_1.default.red(`Scraper: ${err}`));
     }
   }
 }
+exports.Scraper = Scraper;
 (_Scraper_browser = new WeakMap()),
   (_Scraper_scrapeId = new WeakMap()),
   (_Scraper_activeScrapes = new WeakMap());
