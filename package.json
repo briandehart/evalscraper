@@ -1,6 +1,6 @@
 {
   "name": "evalscraper",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A configurable web page scraper that uses Google Puppeteer",
   "keywords": [
     "puppeteer",
@@ -20,8 +20,8 @@
   "author": "Brian Dehart <briandehart@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "chalk": "^2.4.2",
-    "puppeteer": "^8.0.0"
+    "chalk": "^4.1.1",
+    "puppeteer": "^10.0.0"
   },
   "devDependencies": {
     "@brettz9/node-static": "^0.1.1",
@@ -31,9 +31,9 @@
     "find-process": "^1.4.4",
     "ist": "^1.1.7",
     "mocha": "^8.4.0",
-    "prettier": "2.2.1",
+    "prettier": "^2.2.1",
     "shelljs": "^0.8.4",
-    "test-console": "^1.1.0",
+    "test-console": "^2.0.0",
     "typescript": "^4.2.3"
   },
   "files": [
