@@ -1,6 +1,5 @@
-const static = require("node-static");
+const static = require("@brettz9/node-static");
 const http = require("http");
-const fs = require("fs");
 
 const fileServer = new static.Server("./test", { cache: 7200 });
 
