@@ -2,13 +2,25 @@
 
 evalscraper is middleware for scraping web pages with [Google Puppeteer](https://developers.google.com/web/tools/puppeteer).
 
-### Installation
+## Installation
 
 ```console
 npm install evalscraper
 ```
 
-### Usage
+## Usage
+
+ESM
+
+```JavaScript
+import { Scraper, ScrapeTask } from "./dist/evalscraper";
+```
+
+CJS
+
+```JavaScript
+const { Scraper, ScrapeTask } = require("./dist/evalscraper");
+```
 
 Create a new `Scraper` instance.
 
@@ -50,7 +62,33 @@ Close the scraper.
 await scraper.close();
 ```
 
-### Configuration
+Mutliple `Scraper` instances can be created.
+
+```JavaScript
+const scraperFoo = new Scraper();
+const scraperBar = new Scraper();
+
+const resultsFoo = await scraperFoo.scrape(taskFoo);
+const resultsBar = await scraperBar.scrape(taskBar);
+
+scraperFoo.close();
+scraperBar.close();
+```
+
+Or a single `Scraper` instance can be reused.
+
+```JavaScript
+const scraperFoo = new Scraper();
+
+const resultsFoo = await scraperFoo.scrape(taskFoo);
+const resultsBar = await scraperFoo.scrape(taskBar);
+
+scraperFoo.close();
+```
+
+The number of concurrent scrapes you can run will be limited by your hardware.
+
+## Configuration
 
 A `Scraper` instance can be configured by passing an object to the constructor.
 
@@ -65,43 +103,42 @@ A `Scraper` instance can be configured by passing an object to the constructor.
     });
 ```
 
-### Example
+## Example
 
 Scrape [Hacker News](https://news.ycombinator.com/) and return the titles and links of the first ten stories.
 
 ```JavaScript
-const { Scraper, ScrapeTask } = require('evalscraper');
+const { Scraper, ScrapeTask } = require("./dist/evalscraper");
 
-const scraper = new Scraper(
-  {
-    throwError: true,
-    noisy: false,
-    timeout: 30000,
-    maxRetries: 2
-  });
+const scraper = new Scraper({
+  throwError: true,
+  noisy: true,
+  timeout: 30000,
+  maxRetries: 2,
+});
 
 // returns the titles and links of
 // the first ten Hacker News stories
-const newsScrape =
-  new ScrapeTask('https://news.ycombinator.com/',
-    [
-      'stories',
-      'a.storylink',
-      anchors => anchors.map(a => {
-        const story = [];
-        story.push(a.textContent);
-        story.push(a.href)
-        return story;
-      }),
-      stories => stories.slice(0, 10)
-    ],
-  );
+const newsScrape = new ScrapeTask("https://news.ycombinator.com/", [
+  "stories",
+  "a.titlelink",
+  (anchors) =>
+    anchors.map((a) => {
+      const story = [];
+      story.push(a.textContent);
+      story.push(a.href);
+      return story;
+    }),
+  (stories) => stories.slice(0, 10),
+]);
 
-async function logStories (scrapeTask) {
+async function logStories(scrapeTask) {
   try {
     const hackerNews = await scraper.scrape(scrapeTask);
-    hackerNews.stories.forEach(story => console.log(story[0], story[1], '\n'));
-    scraper.close()
+    hackerNews.stories.forEach((story) =>
+      console.log(story[0], story[1], "\n")
+    );
+    scraper.close();
   } catch (err) {
     console.log(err);
   }

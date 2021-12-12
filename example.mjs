@@ -1,4 +1,4 @@
-const { Scraper, ScrapeTask } = require("./dist/evalscraper");
+import { Scraper, ScrapeTask } from "./dist/evalscraper.mjs";
 
 const scraper = new Scraper({
   throwError: true,
