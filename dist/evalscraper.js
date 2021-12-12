@@ -83,6 +83,7 @@ class ScrapeHandler extends ScraperConfig {
     this.browser = browser;
   }
   async handleScrape(task) {
+    var _a;
     try {
       const scrapeId = { id: this.id };
       if (
@@ -140,7 +141,13 @@ class ScrapeHandler extends ScraperConfig {
         __classPrivateFieldSet(
           this,
           _ScrapeHandler_retryCounter,
-          +__classPrivateFieldGet(this, _ScrapeHandler_retryCounter, "f") + 1,
+          ((_a = __classPrivateFieldGet(
+            this,
+            _ScrapeHandler_retryCounter,
+            "f"
+          )),
+          _a++,
+          _a),
           "f"
         );
         if (this.noisy)
